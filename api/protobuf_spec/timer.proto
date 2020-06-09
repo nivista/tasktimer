@@ -1,0 +1,55 @@
+syntax = "proto3";
+package executor;
+
+import "google/protobuf/timestamp.proto";
+
+option go_package = "github.com/nivista/tasktimer/api/v1";
+
+// TIMER
+message Timer {
+    bytes id = 1;
+    string account = 2;
+    uint32 execution_count = 3;
+    Meta meta = 4;
+    oneof executor_config {
+        HTTPConfig http_config = 5;
+    }
+    oneof scheduler_config {
+        CronConfig cron_config = 6;
+        IntervalConfig interval_config = 7;
+    }
+}
+// END TIMER
+
+// META 
+message Meta {
+    google.protobuf.Timestamp create_time = 1;
+}
+// END META 
+
+// EXECUTOR CONFIGS
+enum Method {
+    GET = 0;
+    POST = 1;
+}
+message HTTPConfig {
+    string url = 1;
+    Method method = 2;
+    string body = 3;
+    repeated string headers = 4;
+}
+// END EXECUTOR CONFIGS 
+
+// SCHEDULER CONFIGS
+message IntervalConfig {
+    google.protobuf.Timestamp start_time = 1;
+    int32 interval = 2;
+    sint32 executions = 3;
+}
+
+message CronConfig {
+    google.protobuf.Timestamp start_time = 1;
+    string cron = 2;
+    sint32 executions = 3;
+}
+// END SCHEDULER CONFIGS
