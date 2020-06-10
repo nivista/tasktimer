@@ -11,9 +11,9 @@ type Timer struct {
 	ID             uuid.UUID
 	Account        string
 	ExecutionCount uint32
-	executable
-	schedulable
-	Meta Meta
+	taskConfig
+	scheduleConfig
+	Meta Meta // Not sure yet if this should be exported
 }
 
 // MarshalBinary returns a binary representation of a timer
@@ -46,12 +46,12 @@ func fromProto(p *v1.Timer) (*Timer, error) {
 		return nil, err
 	}
 
-	executorConfig, err := toExecutable(p)
+	taskConfig, err := toTaskConfig(p)
 	if err != nil {
 		return nil, err
 	}
 
-	schedulerConfig, err := toSchedulable(p)
+	scheduleConfig, err := toScheduleConfig(p)
 	if err != nil {
 		return nil, err
 	}
@@ -65,8 +65,8 @@ func fromProto(p *v1.Timer) (*Timer, error) {
 		ID:             id,
 		Account:        p.Account,
 		ExecutionCount: p.ExecutionCount,
-		executable:     executorConfig,
-		schedulable:    schedulerConfig,
+		taskConfig:     taskConfig,
+		scheduleConfig: scheduleConfig,
 		Meta:           *meta,
 	}
 	return &timer, nil
@@ -81,8 +81,8 @@ func (t *Timer) toProto() (*v1.Timer, error) {
 	p.Id = id
 	p.Account = t.Account
 	p.ExecutionCount = t.ExecutionCount
-	t.executable.assignToProto(&p)
-	t.schedulable.assignToProto(&p)
+	t.taskConfig.assignToProto(&p)
+	t.scheduleConfig.assignToProto(&p)
 	t.Meta.assignToProto(&p)
 	return &p, nil
 }

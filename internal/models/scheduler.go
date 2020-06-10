@@ -9,75 +9,73 @@ import (
 	"github.com/golang/protobuf/ptypes"
 )
 
-type schedulable interface {
+type scheduleConfig interface {
+	Schedule
 	assignToProto(*v1.Timer) error
-	GetNextExec(*time.Time) (*time.Time, error)
-	IsValid() (bool, string)
 }
 
-// CronConfig represents a scheduling scheme based on a 6 digit crontab.
-// "* * * * * *", like regular cron but seconds is the first field.
-type CronConfig struct {
-	start      time.Time
-	cron       string
-	executions int32
+// Schedule is an object handled by a ScheduleVisitor
+type Schedule interface {
+	Visit(ScheduleVisitor)
 }
 
-// IntervalConfig represents a scheduling scheme in which the timer fires every
-// "interval" seconds
-type IntervalConfig struct {
-	start      time.Time
-	interval   int32
-	executions int32
+// ScheduleVisitor should be implemented by anyone that wants to handle every kind of Schedule
+type ScheduleVisitor interface {
+	VisitCron(Cron)
+	VisitInterval(Interval)
 }
 
-func (c *CronConfig) assignToProto(p *v1.Timer) error {
-	start, err := ptypes.TimestampProto(c.start)
+// Cron represents the configuration to a cron schedule
+type Cron struct {
+	Start      time.Time
+	Cron       string
+	Executions int32
+}
+
+// Visit calls VisitCron on the ScheduleVisitor
+func (c Cron) Visit(v ScheduleVisitor) {
+	v.VisitCron(c)
+}
+
+// Interval represents the configuration to an interval based scheduler
+type Interval struct {
+	Start      time.Time
+	Interval   int32
+	Executions int32
+}
+
+// Visit calls VisitInterval on the ScheduleVisitor
+func (i Interval) Visit(v ScheduleVisitor) {
+	v.VisitInterval(i)
+}
+
+func (c *Cron) assignToProto(p *v1.Timer) error {
+	start, err := ptypes.TimestampProto(c.Start)
 	if err != nil {
 		return err
 	}
 	p.SchedulerConfig = &v1.Timer_CronConfig{CronConfig: &v1.CronConfig{
 		StartTime:  start,
-		Cron:       c.cron,
-		Executions: c.executions,
+		Cron:       c.Cron,
+		Executions: c.Executions,
 	}}
 	return nil
 }
 
-// GetNextExec returns a time.Timer that will fire next time an execution should happen
-func (c *CronConfig) GetNextExec(*time.Time) (*time.Time, error) {
-	return nil, nil
-}
-
-// IsValid returns true, "" if the configuration is valid. Otherwise it returns false, and a reason.
-func (c *CronConfig) IsValid() (bool, string) {
-	return true, ""
-}
-
-func (c *IntervalConfig) assignToProto(p *v1.Timer) error {
-	start, err := ptypes.TimestampProto(c.start)
+func (i *Interval) assignToProto(p *v1.Timer) error {
+	start, err := ptypes.TimestampProto(i.Start)
 	if err != nil {
 		return err
 	}
 	p.SchedulerConfig = &v1.Timer_IntervalConfig{IntervalConfig: &v1.IntervalConfig{
 		StartTime:  start,
-		Interval:   c.interval,
-		Executions: c.executions,
+		Interval:   i.Interval,
+		Executions: i.Executions,
 	}}
 	return nil
 }
 
-// GetNextExec returns a time.Timer that will fire next time an execution should happen
-func (c *IntervalConfig) GetNextExec(*time.Time) (*time.Time, error) {
-	return nil, nil
-}
-
-// IsValid returns true, "" if the configuration is valid. Otherwise it returns false, and a reason.
-func (c *IntervalConfig) IsValid() (bool, string) {
-	return true, ""
-}
-
-func toSchedulable(p *v1.Timer) (schedulable, error) {
+func toScheduleConfig(p *v1.Timer) (scheduleConfig, error) {
 	switch config := p.SchedulerConfig.(type) {
 	case *v1.Timer_CronConfig:
 		pCronConfig := config.CronConfig
@@ -86,10 +84,10 @@ func toSchedulable(p *v1.Timer) (schedulable, error) {
 		if err != nil {
 			return nil, err
 		}
-		cronConfig := CronConfig{
-			start:      start,
-			cron:       pCronConfig.Cron,
-			executions: pCronConfig.Executions,
+		cronConfig := Cron{
+			Start:      start,
+			Cron:       pCronConfig.Cron,
+			Executions: pCronConfig.Executions,
 		}
 		return &cronConfig, nil
 	case *v1.Timer_IntervalConfig:
@@ -100,10 +98,10 @@ func toSchedulable(p *v1.Timer) (schedulable, error) {
 			return nil, err
 		}
 
-		intervalConfig := IntervalConfig{
-			start:      start,
-			interval:   pIntervalConfig.Interval,
-			executions: pIntervalConfig.Executions,
+		intervalConfig := Interval{
+			Start:      start,
+			Interval:   pIntervalConfig.Interval,
+			Executions: pIntervalConfig.Executions,
 		}
 		return &intervalConfig, nil
 	default:
