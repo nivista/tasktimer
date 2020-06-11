@@ -11,10 +11,10 @@ message Timer {
     string account = 2;
     uint32 execution_count = 3;
     Meta meta = 4;
-    oneof executor_config {
+    oneof task_config {
         HTTPConfig http_config = 5;
     }
-    oneof scheduler_config {
+    oneof schedule_config {
         CronConfig cron_config = 6;
         IntervalConfig interval_config = 7;
     }

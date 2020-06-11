@@ -18,16 +18,16 @@ func getMockTimer() (*Timer, error) {
 		ID:             id,
 		Account:        "Hello",
 		ExecutionCount: 10,
-		executable: &HTTPConfig{
-			url:     "http://www.example.com/",
-			method:  get,
-			body:    "hello go",
-			headers: []string{"set-cookie:yum"},
+		Task: &HTTP{
+			URL:     "http://www.example.com/",
+			Method:  GET,
+			Body:    "hello go",
+			Headers: []string{"set-cookie:yum"},
 		},
-		schedulable: &CronConfig{
-			start:      time.Unix(0, 0).UTC(), // important, we're not encoding location so make sure it's set to nil (UTC)
-			cron:       "* * * * *",
-			executions: 10,
+		Schedule: &Cron{
+			Start:      time.Unix(0, 0).UTC(), // important, we're not encoding location so make sure it's set to nil (UTC)
+			Cron:       "* * * * *",
+			Executions: 10,
 		},
 		Meta: Meta{
 			creationTime: time.Unix(0, 0).UTC(),
@@ -58,56 +58,5 @@ func TestMarshalTimer(t *testing.T) {
 
 	if !reflect.DeepEqual(*timer, timer2) {
 		t.Error("Unmarshaled timer unequal to original")
-	}
-}
-
-func TestCronSchedule(t *testing.T) {
-	crons := []string{"0 0 12 1 * *"}
-	cronConfigs := make([]CronConfig, len(crons))
-	for idx, cron := range crons {
-		cronConfigs[idx] = CronConfig{
-			start: time.Unix(0, 0).UTC(),
-			cron:  cron,
-		}
-	}
-
-	now := time.Unix(0, 0).UTC().Add(time.Duration(1))
-
-	expectedResults := []time.Time{time.Unix(60*60*12, 0).UTC()}
-	for idx, config := range cronConfigs {
-		timer, err := config.GetNextExec(&now)
-		if err != nil {
-			t.Errorf("failed test case %v with error: %v\n", idx, err)
-		} else if timer != &expectedResults[idx] {
-			t.Errorf("failed test case %v with unexpected result\n", idx)
-		}
-	}
-}
-
-func TestIntervalSchedule(t *testing.T) {
-	intervals := []int32{1, 60, 1000}
-
-	intervalConfigs := make([]IntervalConfig, len(intervals))
-
-	for idx, interval := range intervals {
-		intervalConfigs[idx] = IntervalConfig{
-			start:    time.Unix(0, 0).UTC(),
-			interval: interval,
-		}
-	}
-
-	now := time.Unix(0, 0).UTC().Add(time.Duration(1))
-	expectedResults := []time.Time{time.Unix(1, 0).UTC(),
-		time.Unix(60, 0).UTC(),
-		time.Unix(1000, 0).UTC(),
-	}
-
-	for idx, config := range intervalConfigs {
-		timer, err := config.GetNextExec(&now)
-		if err != nil {
-			t.Errorf("failed test case %v with error: %v\n", idx, err)
-		} else if timer != &expectedResults[idx] {
-			t.Errorf("failed test case %v with unexpected result\n", idx)
-		}
 	}
 }
