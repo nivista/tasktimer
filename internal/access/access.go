@@ -22,4 +22,4 @@ func (d *DB) SetExecCount(account string, id uuid.UUID, count int) error
 func (d *DB) GetTimer(account string, id uuid.UUID) (models.Timer, error)
 
 // GetTimers gets all timers associated with an account from the DB.
-func (d *DB) GetTimers(account string) ([]*models.Timer, error)
+func (d *DB) GetTimers(account string) ([]uuid.UUID, error)
