@@ -9,11 +9,6 @@ import (
 	"github.com/golang/protobuf/ptypes"
 )
 
-type scheduleConfig interface {
-	Schedule
-	assignToProto(*v1.Timer) error
-}
-
 // Schedule is an object handled by a ScheduleVisitor
 type Schedule interface {
 	Visit(ScheduleVisitor)
@@ -49,34 +44,36 @@ func (i Interval) Visit(v ScheduleVisitor) {
 	v.VisitInterval(i)
 }
 
-func (c *Cron) assignToProto(p *v1.Timer) error {
+type protoScheduleGenerator struct{ *v1.Timer }
+
+func (p protoScheduleGenerator) VisitCron(c Cron) {
 	start, err := ptypes.TimestampProto(c.Start)
 	if err != nil {
-		return err
+		panic(err)
 	}
-	p.SchedulerConfig = &v1.Timer_CronConfig{CronConfig: &v1.CronConfig{
+
+	p.ScheduleConfig = &v1.Timer_CronConfig{CronConfig: &v1.CronConfig{
 		StartTime:  start,
 		Cron:       c.Cron,
 		Executions: c.Executions,
 	}}
-	return nil
 }
 
-func (i *Interval) assignToProto(p *v1.Timer) error {
+func (p protoScheduleGenerator) VisitInterval(i Interval) {
 	start, err := ptypes.TimestampProto(i.Start)
 	if err != nil {
-		return err
+		panic(err)
 	}
-	p.SchedulerConfig = &v1.Timer_IntervalConfig{IntervalConfig: &v1.IntervalConfig{
+
+	p.ScheduleConfig = &v1.Timer_IntervalConfig{IntervalConfig: &v1.IntervalConfig{
 		StartTime:  start,
 		Interval:   i.Interval,
 		Executions: i.Executions,
 	}}
-	return nil
 }
 
-func toScheduleConfig(p *v1.Timer) (scheduleConfig, error) {
-	switch config := p.SchedulerConfig.(type) {
+func toScheduleConfig(p *v1.Timer) (Schedule, error) {
+	switch config := p.ScheduleConfig.(type) {
 	case *v1.Timer_CronConfig:
 		pCronConfig := config.CronConfig
 

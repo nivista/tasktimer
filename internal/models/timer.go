@@ -11,8 +11,8 @@ type Timer struct {
 	ID             uuid.UUID
 	Account        string
 	ExecutionCount uint32
-	taskConfig
-	scheduleConfig
+	Task
+	Schedule
 	Meta Meta // Not sure yet if this should be exported
 }
 
@@ -65,8 +65,8 @@ func fromProto(p *v1.Timer) (*Timer, error) {
 		ID:             id,
 		Account:        p.Account,
 		ExecutionCount: p.ExecutionCount,
-		taskConfig:     taskConfig,
-		scheduleConfig: scheduleConfig,
+		Task:           taskConfig,
+		Schedule:       scheduleConfig,
 		Meta:           *meta,
 	}
 	return &timer, nil
@@ -81,8 +81,8 @@ func (t *Timer) toProto() (*v1.Timer, error) {
 	p.Id = id
 	p.Account = t.Account
 	p.ExecutionCount = t.ExecutionCount
-	t.taskConfig.assignToProto(&p)
-	t.scheduleConfig.assignToProto(&p)
+	t.Task.Visit(protoTaskGenerator{&p})
+	t.Schedule.Visit(protoScheduleGenerator{&p})
 	t.Meta.assignToProto(&p)
 	return &p, nil
 }

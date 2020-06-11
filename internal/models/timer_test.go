@@ -18,13 +18,13 @@ func getMockTimer() (*Timer, error) {
 		ID:             id,
 		Account:        "Hello",
 		ExecutionCount: 10,
-		taskConfig: &HTTP{
+		Task: &HTTP{
 			URL:     "http://www.example.com/",
 			Method:  GET,
 			Body:    "hello go",
 			Headers: []string{"set-cookie:yum"},
 		},
-		scheduleConfig: &Cron{
+		Schedule: &Cron{
 			Start:      time.Unix(0, 0).UTC(), // important, we're not encoding location so make sure it's set to nil (UTC)
 			Cron:       "* * * * *",
 			Executions: 10,

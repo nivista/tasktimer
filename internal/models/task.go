@@ -6,11 +6,6 @@ import (
 	v1 "github.com/nivista/tasktimer/api/v1"
 )
 
-type taskConfig interface {
-	Task
-	assignToProto(*v1.Timer) error
-}
-
 // Task represents a recurring task
 type Task interface {
 	Visit(TaskVisitor)
@@ -45,18 +40,19 @@ func (h HTTP) Visit(t TaskVisitor) {
 	t.VisitHTTP(h)
 }
 
-func (h *HTTP) assignToProto(p *v1.Timer) error {
-	p.ExecutorConfig = &v1.Timer_HttpConfig{HttpConfig: &v1.HTTPConfig{
+type protoTaskGenerator struct{ *v1.Timer }
+
+func (p protoTaskGenerator) VisitHTTP(h HTTP) {
+	p.TaskConfig = &v1.Timer_HttpConfig{HttpConfig: &v1.HTTPConfig{
 		Url:     h.URL,
 		Method:  v1.Method(h.Method),
 		Body:    h.Body,
 		Headers: h.Headers,
 	}}
-	return nil
 }
 
-func toTaskConfig(p *v1.Timer) (taskConfig, error) {
-	switch config := p.ExecutorConfig.(type) {
+func toTaskConfig(p *v1.Timer) (Task, error) {
+	switch config := p.TaskConfig.(type) {
 	case *v1.Timer_HttpConfig:
 		pHTTPConfig := config.HttpConfig
 		http := HTTP{
