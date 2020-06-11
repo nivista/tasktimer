@@ -44,13 +44,14 @@ func (i Interval) Visit(v ScheduleVisitor) {
 	v.VisitInterval(i)
 }
 
-type protoScheduleGenerator struct{ *v1.Timer }
+type protoScheduleGenerator struct {
+	*v1.Timer
+	error
+}
 
 func (p protoScheduleGenerator) VisitCron(c Cron) {
 	start, err := ptypes.TimestampProto(c.Start)
-	if err != nil {
-		panic(err)
-	}
+	p.error = err
 
 	p.ScheduleConfig = &v1.Timer_CronConfig{CronConfig: &v1.CronConfig{
 		StartTime:  start,
@@ -61,9 +62,7 @@ func (p protoScheduleGenerator) VisitCron(c Cron) {
 
 func (p protoScheduleGenerator) VisitInterval(i Interval) {
 	start, err := ptypes.TimestampProto(i.Start)
-	if err != nil {
-		panic(err)
-	}
+	p.error = err
 
 	p.ScheduleConfig = &v1.Timer_IntervalConfig{IntervalConfig: &v1.IntervalConfig{
 		StartTime:  start,

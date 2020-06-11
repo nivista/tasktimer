@@ -78,11 +78,19 @@ func (t *Timer) toProto() (*v1.Timer, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	p.Id = id
 	p.Account = t.Account
 	p.ExecutionCount = t.ExecutionCount
+
 	t.Task.Visit(protoTaskGenerator{&p})
-	t.Schedule.Visit(protoScheduleGenerator{&p})
+
+	psg := protoScheduleGenerator{Timer: &p}
+	t.Schedule.Visit(psg)
+	if psg.error != nil {
+		return nil, psg.error
+	}
+
 	t.Meta.assignToProto(&p)
 	return &p, nil
 }
