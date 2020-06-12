@@ -46,12 +46,12 @@ func fromProto(p *v1.Timer) (*Timer, error) {
 		return nil, err
 	}
 
-	taskConfig, err := toTaskConfig(p)
+	taskConfig, err := ToTask(p.TaskConfig)
 	if err != nil {
 		return nil, err
 	}
 
-	scheduleConfig, err := toScheduleConfig(p)
+	scheduleConfig, err := ToSchedule(p.ScheduleConfig)
 	if err != nil {
 		return nil, err
 	}

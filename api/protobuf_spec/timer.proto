@@ -11,15 +11,39 @@ message Timer {
     string account = 2;
     uint32 execution_count = 3;
     Meta meta = 4;
-    oneof task_config {
-        HTTPConfig http_config = 5;
-    }
-    oneof schedule_config {
-        CronConfig cron_config = 6;
-        IntervalConfig interval_config = 7;
-    }
+    TaskConfig task_config = 5;
+    ScheduleConfig schedule_config = 6;
 }
 // END TIMER
+
+
+message CreateTimer {
+    bytes id = 1;
+    string account = 2;
+    TaskConfig task_config = 3;
+    ScheduleConfig schedule_config = 4;
+}
+
+
+// SCHEDULE CONFIG
+message ScheduleConfig {
+    oneof schedule_config {
+        CronConfig cron_config = 1;
+        IntervalConfig interval_config = 2;
+    }
+}
+
+// END SCHEDULE CONFIG
+
+// TASK CONFIG
+message TaskConfig {
+    oneof task_config {
+        HTTPConfig http_config = 1;
+    }
+}
+
+// END TASK CONFIG
+
 
 // META 
 message Meta {

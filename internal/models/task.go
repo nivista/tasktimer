@@ -43,17 +43,18 @@ func (h HTTP) Visit(t TaskVisitor) {
 type protoTaskGenerator struct{ *v1.Timer }
 
 func (p protoTaskGenerator) VisitHTTP(h HTTP) {
-	p.TaskConfig = &v1.Timer_HttpConfig{HttpConfig: &v1.HTTPConfig{
+	p.TaskConfig = &v1.TaskConfig{TaskConfig: &v1.TaskConfig_HttpConfig{HttpConfig: &v1.HTTPConfig{
 		Url:     h.URL,
 		Method:  v1.Method(h.Method),
 		Body:    h.Body,
 		Headers: h.Headers,
-	}}
+	}}}
 }
 
-func toTaskConfig(p *v1.Timer) (Task, error) {
+// ToTask turns v1.TaskConfig into Task.
+func ToTask(p *v1.TaskConfig) (Task, error) {
 	switch config := p.TaskConfig.(type) {
-	case *v1.Timer_HttpConfig:
+	case *v1.TaskConfig_HttpConfig:
 		pHTTPConfig := config.HttpConfig
 		http := HTTP{
 			URL:     pHTTPConfig.Url,

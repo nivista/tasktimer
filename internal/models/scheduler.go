@@ -53,27 +53,26 @@ func (p protoScheduleGenerator) VisitCron(c Cron) {
 	start, err := ptypes.TimestampProto(c.Start)
 	p.error = err
 
-	p.ScheduleConfig = &v1.Timer_CronConfig{CronConfig: &v1.CronConfig{
+	p.ScheduleConfig = &v1.ScheduleConfig{ScheduleConfig: &v1.ScheduleConfig_CronConfig{CronConfig: &v1.CronConfig{
 		StartTime:  start,
 		Cron:       c.Cron,
 		Executions: c.Executions,
-	}}
+	}}}
 }
 
 func (p protoScheduleGenerator) VisitInterval(i Interval) {
 	start, err := ptypes.TimestampProto(i.Start)
 	p.error = err
-
-	p.ScheduleConfig = &v1.Timer_IntervalConfig{IntervalConfig: &v1.IntervalConfig{
+	p.ScheduleConfig = &v1.ScheduleConfig{ScheduleConfig: &v1.ScheduleConfig_IntervalConfig{IntervalConfig: &v1.IntervalConfig{
 		StartTime:  start,
 		Interval:   i.Interval,
-		Executions: i.Executions,
-	}}
+		Executions: i.Executions}}}
 }
 
-func toScheduleConfig(p *v1.Timer) (Schedule, error) {
+// ToSchedule converts v1.ScheduleConfig into Schedule
+func ToSchedule(p *v1.ScheduleConfig) (Schedule, error) {
 	switch config := p.ScheduleConfig.(type) {
-	case *v1.Timer_CronConfig:
+	case *v1.ScheduleConfig_CronConfig:
 		pCronConfig := config.CronConfig
 
 		start, err := ptypes.Timestamp(pCronConfig.StartTime)
@@ -86,7 +85,7 @@ func toScheduleConfig(p *v1.Timer) (Schedule, error) {
 			Executions: pCronConfig.Executions,
 		}
 		return &cronConfig, nil
-	case *v1.Timer_IntervalConfig:
+	case *v1.ScheduleConfig_IntervalConfig:
 		pIntervalConfig := config.IntervalConfig
 
 		start, err := ptypes.Timestamp(pIntervalConfig.StartTime)

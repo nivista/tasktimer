@@ -30,7 +30,7 @@ func getMockTimer() (*Timer, error) {
 			Executions: 10,
 		},
 		Meta: Meta{
-			creationTime: time.Unix(0, 0).UTC(),
+			CreationTime: time.Unix(0, 0).UTC(),
 		},
 	}
 

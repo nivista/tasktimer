@@ -10,11 +10,11 @@ import (
 
 // Meta represents metadata about a timer
 type Meta struct {
-	creationTime time.Time
+	CreationTime time.Time
 }
 
 func (m *Meta) assignToProto(p *v1.Timer) error {
-	pTime, err := ptypes.TimestampProto(m.creationTime)
+	pTime, err := ptypes.TimestampProto(m.CreationTime)
 	if err != nil {
 		return err
 	}
@@ -30,6 +30,6 @@ func getMeta(p *v1.Timer) (*Meta, error) {
 		return nil, err
 	}
 	return &Meta{
-		creationTime: creationTime,
+		CreationTime: creationTime,
 	}, nil
 }
