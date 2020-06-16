@@ -90,7 +90,8 @@ func (c *Client) CreateTimer(ctx context.Context, t timer.Timer) error {
 
 	_, err = c.Query(ctx,
 		`insert into timers (id, account, executionCount, taskType, task, scheduleType, schedule, meta) 
-			values ($1, $2, $3, $4, $5, $6, $7, $8)`,
+			values ($1, $2, $3, $4, $5, $6, $7, $8)
+			on conflict do nothing`,
 		t.ID, t.Account, t.ExecutionCount, tt, task, st, sched, t.Meta)
 
 	return err
