@@ -1,6 +1,8 @@
 package timer
 
 import (
+	"encoding"
+	"encoding/json"
 	"time"
 
 	"github.com/google/uuid"
@@ -20,11 +22,19 @@ type (
 	// Task represents a timer task.
 	Task interface {
 		isTask()
+		encoding.BinaryMarshaler
+		encoding.BinaryUnmarshaler
 	}
 
 	// Schedule represents the "when" configuration of a timer.
 	Schedule interface {
 		isSchedule()
+		encoding.BinaryMarshaler
+		encoding.BinaryUnmarshaler
+	}
+
+	Meta struct {
+		CreationTime time.Time
 	}
 )
 
@@ -42,6 +52,14 @@ type (
 )
 
 func (HTTP) isTask() {}
+
+func (t *HTTP) MarshalBinary() ([]byte, error) {
+	return json.Marshal(t)
+}
+
+func (t *HTTP) UnmarshalBinary(bytes []byte) error {
+	return json.Unmarshal(bytes, t)
+}
 
 // Method definitions
 const (
@@ -68,4 +86,20 @@ type (
 
 func (Cron) isSchedule() {}
 
+func (s *Cron) MarshalBinary() ([]byte, error) {
+	return json.Marshal(s)
+}
+
+func (s *Cron) UnmarshalBinary(bytes []byte) error {
+	return json.Unmarshal(bytes, s)
+}
+
 func (Interval) isSchedule() {}
+
+func (s *Interval) MarshalBinary() ([]byte, error) {
+	return json.Marshal(s)
+}
+
+func (s *Interval) UnmarshalBinary(bytes []byte) error {
+	return json.Unmarshal(bytes, s)
+}
