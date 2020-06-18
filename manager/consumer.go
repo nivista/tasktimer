@@ -82,7 +82,7 @@ func (c *consumer) Setup(session sarama.ConsumerGroupSession) error {
 		}
 	}
 
-	c.cord.repartition(partitions)
+	c.cord.handleRepartition(partitions)
 
 	// Mark the consumer as ready
 	close(c.ready)
@@ -106,7 +106,7 @@ func (c *consumer) ConsumeClaim(session sarama.ConsumerGroupSession, claim saram
 			fmt.Printf("manager/consumer.go unmarshalbinary :: %v\n", err)
 		}
 
-		c.cord.addTimer(&t, message.Offset)
+		c.cord.addTimer(&t, claim.Partition(), message.Offset)
 		session.MarkMessage(message, "")
 	}
 
