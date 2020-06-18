@@ -11,18 +11,18 @@ import (
 	"syscall"
 
 	"github.com/Shopify/sarama"
-	"github.com/nivista/tasktimer/store"
+	"github.com/nivista/tasktimer/messaging"
 	"github.com/nivista/tasktimer/timer"
 )
 
-func InitConsumer(c *store.Client) {
+func InitConsumer(c *messaging.Client) {
 
 	config := sarama.NewConfig()
 
 	config.Consumer.Group.Rebalance.Strategy = sarama.BalanceStrategyRoundRobin
 
 	cord := newCoordinator(c)
-	myConsumer := consumer{db: c, cord: cord}
+	myConsumer := consumer{queue: c, cord: cord}
 
 	brokers := os.Getenv("KAFKA_PEERS")
 	ctx, cancel := context.WithCancel(context.Background())
@@ -67,7 +67,7 @@ func InitConsumer(c *store.Client) {
 }
 
 type consumer struct {
-	db    *store.Client
+	queue *messaging.Client
 	ready chan bool
 	cord  *coordinator
 }
