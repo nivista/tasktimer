@@ -3,7 +3,7 @@ module github.com/nivista/tasktimer
 go 1.14
 
 require (
-	github.com/gofrs/uuid v3.2.0+incompatible
+	github.com/Shopify/sarama v1.26.4
 	github.com/golang/protobuf v1.4.2
 	github.com/google/uuid v1.1.1
 	github.com/jackc/pgconn v1.6.0 // indirect
