@@ -11,10 +11,6 @@ import (
 	"github.com/google/uuid"
 )
 
-func init() {
-	//register gob stuff
-}
-
 // Timer definition
 type (
 	Timer struct {
