@@ -22,7 +22,7 @@ func InitConsumer(c *Client) {
 
 	myConsumer := consumer{db: c}
 
-	brokers := os.Getenv("KAFKA_BROKERS")
+	brokers := os.Getenv("KAFKA_PEERS")
 	ctx, cancel := context.WithCancel(context.Background())
 	client, err := sarama.NewConsumerGroup(strings.Split(brokers, ","), "store", config)
 
